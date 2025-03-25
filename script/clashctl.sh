@@ -51,15 +51,20 @@ clashstatus() {
 function clashui() {
     # 防止tun模式强制走代理获取不到真实公网ip
     clashoff >&/dev/null
+
     _get_kernel_port
-    # 公网ip
-    # ifconfig.me
-    local query_url='api64.ipify.org'
-    local public_ip=$(curl -s --noproxy "*" --connect-timeout 2 $query_url)
-    local public_address="http://${public_ip:-公网}:${UI_PORT}/ui"
-    # 内网ip
-    # ip route get 1.1.1.1 | grep -oP 'src \K\S+'
-    local local_ip=$(hostname -I | awk '{print $1}')
+    local local_ip=$BIND_LOCAL_IP
+    [ -z "$BIND_LOCAL_IP" ] && {
+        local_ip=$(hostname -I | awk '{print $1}')
+
+        local query_url='api64.ipify.org' # ifconfig.me
+        local public_ip=$(curl -s --noproxy "*" --connect-timeout 2 $query_url)
+        local public_address="http://${public_ip:-公网}:${UI_PORT}/ui"
+        print_pub() {
+            printf "║     🌏 公网：%-31s  ║\n" "$public_address"
+            printf "║     ☁️  公共：%-31s  ║\n" "$URL_CLASH_UI"
+        }
+    }
     local local_address="http://${local_ip}:${UI_PORT}/ui"
     printf "\n"
     printf "╔═══════════════════════════════════════════════╗\n"
@@ -68,8 +73,7 @@ function clashui() {
     printf "║                                               ║\n"
     printf "║     🔓 注意放行端口：%-5s                    ║\n" "$UI_PORT"
     printf "║     🏠 内网：%-31s  ║\n" "$local_address"
-    printf "║     🌏 公网：%-31s  ║\n" "$public_address"
-    printf "║     ☁️  公共：%-31s  ║\n" "$URL_CLASH_UI"
+    print_pub
     printf "║                                               ║\n"
     printf "╚═══════════════════════════════════════════════╝\n"
     printf "\n"

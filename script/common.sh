@@ -128,11 +128,13 @@ _get_random_port() {
 function _get_kernel_port() {
     local mixed_port=$(sudo $BIN_YQ '.mixed-port // ""' $CLASH_CONFIG_RUNTIME)
     local ext_addr=$(sudo $BIN_YQ '.external-controller // ""' $CLASH_CONFIG_RUNTIME)
+    local ext_ip=${ext_addr%%:*}
     local ext_port=${ext_addr##*:}
 
     MIXED_PORT=${mixed_port:-7890}
     UI_PORT=${ext_port:-9090}
 
+    [ "$ext_ip" != '0.0.0.0' ] && BIND_LOCAL_IP=$ext_ip
     # 端口占用场景
     local port
     for port in $MIXED_PORT $UI_PORT; do
