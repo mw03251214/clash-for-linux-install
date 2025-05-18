@@ -16,4 +16,4 @@ sed -i '/clashupdate/d' "$CLASH_CRON_TAB" >&/dev/null
 _set_rc unset
 
 _okcat '✨' '已卸载，相关配置已清除'
-_quit
+# _quit

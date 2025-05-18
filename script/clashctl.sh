@@ -175,7 +175,7 @@ function clashupdate() {
 
     # 如果是自动更新模式，则设置定时任务
     [ "$is_auto" = true ] && {
-        sudo grep -qs 'clashupdate' "$CLASH_CRON_TAB" || echo "0 0 */2 * * $_SHELL -i -c '. $SHELL_RC;clashupdate $url'" | sudo tee -a "$CLASH_CRON_TAB" >&/dev/null
+        sudo grep -qs 'clashupdate' "$CLASH_CRON_TAB" || echo "0 0 */2 * * bash -i -c 'clashupdate $url'" | sudo tee -a "$CLASH_CRON_TAB" >&/dev/null
         _okcat "已设置定时更新订阅" && return 0
     }
 
@@ -185,8 +185,7 @@ function clashupdate() {
     _rollback() {
         _failcat '🍂' "$1"
         sudo cat "$CLASH_CONFIG_RAW_BAK" | sudo tee "$CLASH_CONFIG_RAW" >&/dev/null
-        _failcat '❌' "[$(date +"%Y-%m-%d %H:%M:%S")] 订阅更新失败：$url" 2>&1 | sudo tee -a "${CLASH_UPDATE_LOG}" >&/dev/null
-        _error_quit
+        _error_quit '❌' "[$(date +"%Y-%m-%d %H:%M:%S")] 订阅更新失败：$url" 2>&1 | sudo tee -a "${CLASH_UPDATE_LOG}" >&/dev/null
     }
 
     _download_config "$CLASH_CONFIG_RAW" "$url" || _rollback "下载失败：已回滚配置"

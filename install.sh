@@ -53,4 +53,4 @@ systemctl enable "$BIN_KERNEL_NAME" >&/dev/null || _failcat '💥' "设置自启
 clashui
 _okcat '🎉' 'enjoy 🎉'
 clash
-_quit
+# _quit
