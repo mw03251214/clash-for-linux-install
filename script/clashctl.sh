@@ -84,7 +84,15 @@ function clashui() {
 _merge_config_restart() {
     local backup="/tmp/rt.backup"
     sudo cat "$CLASH_CONFIG_RUNTIME" 2>/dev/null | sudo tee $backup >&/dev/null
-    sudo "$BIN_YQ" eval-all '. as $item ireduce ({}; . *+ $item)' "$CLASH_CONFIG_RAW" "$CLASH_CONFIG_MIXIN" | sudo tee "$CLASH_CONFIG_RUNTIME" >&/dev/null
+    
+    # 先进行常规合并，config在前，mixin在后
+    sudo "$BIN_YQ" eval-all '
+        select(fileIndex == 0) as $config |
+        select(fileIndex == 1) as $mixin |
+        $config * $mixin |
+        .rules = ($mixin.rules + $config.rules)
+    ' "$CLASH_CONFIG_RAW" "$CLASH_CONFIG_MIXIN" | sudo tee "$CLASH_CONFIG_RUNTIME" >&/dev/null
+    
     _valid_config "$CLASH_CONFIG_RUNTIME" || {
         sudo cat $backup | sudo tee "$CLASH_CONFIG_RUNTIME" >&/dev/null
         _error_quit "验证失败：请检查 Mixin 配置"
